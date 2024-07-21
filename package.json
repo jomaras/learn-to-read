@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "start": "serve -l 3002"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
+    "openai": "^4.52.2",
+    "serve": "^14.2.3"
+  }
+}
