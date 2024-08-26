@@ -1,10 +1,25 @@
 {
   "scripts": {
-    "start": "serve -l 3002"
+    "start": "serve -l 3002",
+    "start-video": "concurrently \"npm run build-video\" \"serve -l 3002\"",
+    "webpack-video": "webpack --mode development --watch --progress",
+    "build-video": "tsc && webpack --config ./webpack.video.config.js"
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
+    "css-loader": "^7.1.2",
+    "elevenlabs": "^0.15.0",
     "openai": "^4.52.2",
-    "serve": "^14.2.3"
+    "sass": "^1.77.8",
+    "sass-loader": "^16.0.1",
+    "serve": "^14.2.3",
+    "style-loader": "^4.0.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.5.4",
+    "webpack": "^5.94.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "webpack-cli": "^5.1.4"
   }
 }

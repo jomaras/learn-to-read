@@ -1,0 +1,33 @@
+main { position: relative; }
+            
+#video {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+#learning {
+    display: flex;
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 143, 170, 0.8);
+
+    color: white;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 120px;
+    font-weight: bold;
+    text-shadow: 2px 2px #FF8FAA;
+
+    .assignment-label {
+        background: #FF8FAA;
+        display: inline-block;
+        padding: 10px 40px;
+        border-radius: 20px;
+        border: 2px solid white;
+    }
+}
