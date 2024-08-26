@@ -2,6 +2,11 @@ const SpeechRecognition = (window as any).SpeechRecognition || (window as any).w
 const SpeechGrammarList = (window as any).SpeechGrammarList || (window as any).webkitSpeechGrammarList;
 const SpeechRecognitionEvent = (window as any).SpeechRecognitionEvent || (window as any).webkitSpeechRecognitionEvent;
 
+export interface ISpeechRecognitionResult {
+    text: string; 
+    confidence: number;
+}
+
 class SpeechRecognitionUtilsClass {
     private speechRecognition;
     private speechRecognitionCallbacks: Function[];
@@ -57,7 +62,7 @@ class SpeechRecognitionUtilsClass {
         };
     }
 
-    public onSpeechRecognition(callback){
+    public onSpeechRecognition(callback: (results: ISpeechRecognitionResult[]) => void){
         if(!callback) { return; }
         
         if(this.speechRecognitionCallbacks.indexOf(callback) >= 0) { return; }

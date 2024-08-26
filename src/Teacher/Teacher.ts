@@ -1,5 +1,7 @@
-import { SpeechRecognitionUtils } from "../SpeechRecognition/SpeechRecognitionUtils";
+import { ISpeechRecognitionResult, SpeechRecognitionUtils } from "../SpeechRecognition/SpeechRecognitionUtils";
 import { ExerciseType } from "./model/ExerciseType";
+import { ValueUtils } from './../utils/ValueUtils';
+import { VoiceOver } from './../voiceOver/VoiceOver';
 
 export class Teacher {
     private rootElement: HTMLElement
@@ -11,9 +13,10 @@ export class Teacher {
     constructor(rootElement: HTMLElement){
         this.rootElement = rootElement;
         this.continueCallbacks = [];
-        this.exerciseType = ExerciseType.BigWords;
+        this.exerciseType = ExerciseType.Letter;
 
         this.onRecognizeWord = this.onRecognizeWord.bind(this);
+        this.onRecognizeLetter = this.onRecognizeLetter.bind(this);
     }
 
     public teach(text: string) {
@@ -27,12 +30,26 @@ export class Teacher {
         }
     }
 
-    private teachLetters(text: string){
+    private async teachLetters(text: string){
+        const letters = Array.from(text);
+        const letter = letters.find(it => ValueUtils.isLetter(it));
+        const isUpperCase = letter.toUpperCase() == letter;
+        
+        const upperCase = letter.toUpperCase();
+        const lowercase = letter.toLowerCase();
+        
+        this.rootElement.innerHTML = `<div class='assignment-label'><span class="uppercase ${isUpperCase ? "" : "transparent-letter"}">${upperCase}</span> <span class="lowercase ${isUpperCase ? "transparent-letter" : ""}">${lowercase}</span></div>`;
 
+        this.target = letter.toLowerCase();
+
+        await this.sleep(250);
+        await VoiceOver.playReadLetter();
+
+        SpeechRecognitionUtils.onSpeechRecognition(this.onRecognizeLetter);
     }
 
     private techBigWords(text: string){
-        const words = this.splitIntoWords(text).sort((a, b) => b.length - a.length);
+        const words = ValueUtils.splitIntoWords(text).sort((a, b) => b.length - a.length);
 
         const longestWord = words[0];
 
@@ -46,9 +63,27 @@ export class Teacher {
         this.continueCallbacks.push(callback);
     }
 
-    private onRecognizeWord(results: {text: string, confidence: number}[]){
+    private async onRecognizeLetter(results: ISpeechRecognitionResult[]){
         for(const item of results){
-            const words = this.splitIntoWords(item.text).map(it => it.toLowerCase());
+            const words = ValueUtils.splitIntoWords(item.text).map(it => it.toLowerCase());
+            for(const word of words){
+                if(word.toLowerCase() == this.target
+                || word[0].toLowerCase() == this.target){
+                    SpeechRecognitionUtils.offSpeechRecognition(this.onRecognizeLetter);
+
+                    await this.sleep(250);
+                    await VoiceOver.playLetterSound(this.target);
+
+                    this.triggerContinueCallbacks();
+                    return;
+                }
+            }
+        }
+    }
+
+    private onRecognizeWord(results: ISpeechRecognitionResult[]){
+        for(const item of results){
+            const words = ValueUtils.splitIntoWords(item.text).map(it => it.toLowerCase());
             for(const word of words){
                 if(word == this.target){
                     SpeechRecognitionUtils.offSpeechRecognition(this.onRecognizeWord);
@@ -73,7 +108,9 @@ export class Teacher {
         }
     };
 
-    private splitIntoWords(text: string) {
-        return text.split(/(?<=\w)(?=\W)|(?<=\W)(?=\w)/u);
+    private sleep(timeout: number){
+        return new Promise((resolve, reject) => {
+            setTimeout(resolve, timeout);
+        });
     }
 }

@@ -35,3 +35,15 @@ main { position: relative; }
 .pronounced {
     text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 20px #e60073, 0 0 20px #e60073, 0 0 20px #e60073;
 }
+
+.transparent-letter {
+    opacity: 0.5;
+}
+
+.uppercase {
+    padding-right: 1em;
+}
+.uppercase + .lowercase {
+    padding-left: 1em;
+    border-left: 1px solid white; 
+}
