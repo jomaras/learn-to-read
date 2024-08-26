@@ -1,8 +1,8 @@
 {
   "scripts": {
     "start": "serve -l 3002",
-    "start-video": "concurrently \"npm run build-video\" \"serve -l 3002\"",
-    "webpack-video": "webpack --mode development --watch --progress",
+    "start-video": "concurrently \"npm run webpack-video\" \"serve -l 3002\"",
+    "webpack-video": "webpack --config ./webpack.video.config.js --mode development --watch --progress",
     "build-video": "tsc && webpack --config ./webpack.video.config.js"
   },
   "dependencies": {
