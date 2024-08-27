@@ -4,22 +4,37 @@ import { ValueUtils } from './../utils/ValueUtils';
 import { VoiceOver } from './../voiceOver/VoiceOver';
 
 export class Teacher {
-    private rootElement: HTMLElement
+    private rootElement: HTMLElement;
+    private exerciseElement: HTMLElement;
     private continueCallbacks: Function[];
     
     private exerciseType: ExerciseType;
-    private target = ""
+    private target: string = "";
+    private sourceText: string = "";
     
     constructor(rootElement: HTMLElement){
         this.rootElement = rootElement;
+        this.exerciseElement = this.rootElement.querySelector(".main-learning-container");
         this.continueCallbacks = [];
-        this.exerciseType = ExerciseType.Letter;
+        this.exerciseType = ExerciseType.BigWords;
 
         this.onRecognizeWord = this.onRecognizeWord.bind(this);
         this.onRecognizeLetter = this.onRecognizeLetter.bind(this);
+
+        this.rootElement.querySelector(".retry-button").addEventListener("click", () => {
+            this.teach(this.sourceText);
+        });
+        
+        this.rootElement.querySelector(".skip-button").addEventListener("click", () => {
+            SpeechRecognitionUtils.offSpeechRecognition(this.onRecognizeWord);
+            this.triggerContinueCallbacks();
+            return;
+        });
     }
 
     public teach(text: string) {
+        this.sourceText = text;
+        
         if(this.exerciseType == ExerciseType.BigWords
         || this.exerciseType == ExerciseType.MediumWords
         || this.exerciseType == ExerciseType.SmallWords) {
@@ -38,7 +53,7 @@ export class Teacher {
         const upperCase = letter.toUpperCase();
         const lowercase = letter.toLowerCase();
         
-        this.rootElement.innerHTML = `<div class='assignment-label'><span class="uppercase ${isUpperCase ? "" : "transparent-letter"}">${upperCase}</span> <span class="lowercase ${isUpperCase ? "transparent-letter" : ""}">${lowercase}</span></div>`;
+        this.exerciseElement.innerHTML = `<div class='assignment-label'><span class="uppercase ${isUpperCase ? "" : "transparent-letter"}">${upperCase}</span> <span class="lowercase ${isUpperCase ? "transparent-letter" : ""}">${lowercase}</span></div>`;
 
         this.target = letter.toLowerCase();
 
@@ -50,13 +65,22 @@ export class Teacher {
 
     private techBigWords(text: string){
         const words = ValueUtils.splitIntoWords(text).sort((a, b) => b.length - a.length);
+        const bigWords = words.filter(it => it.length >= 4);
 
-        const longestWord = words[0];
+        let selectedWord = words[0];
 
-        this.rootElement.innerHTML = `<div class='assignment-label'>${Array.from(longestWord).map(it => `<span class="not-pronounced" data-letter="${it.toLowerCase()}">${it}</span>`).join("")}</div>`;
-        this.target = longestWord.toLowerCase();
+        if(bigWords.length > 1){
+            selectedWord = ValueUtils.getRandomArrayItem(bigWords);
+        }
+
+        this.exerciseElement.innerHTML = `<div class='assignment-label'>${this.generateWordHtml(selectedWord)}</div>`;
+        this.target = selectedWord.toLowerCase();
 
         SpeechRecognitionUtils.onSpeechRecognition(this.onRecognizeWord);
+    }
+
+    private generateWordHtml(text: string){
+        return Array.from(text).map(it => `<span class="not-pronounced" data-letter="${it.toLowerCase()}">${it}</span>`).join("")
     }
 
     public onContinue(callback: Function){
@@ -92,7 +116,7 @@ export class Teacher {
                 }
                 else if(word.length == 1){
                     const letter = word.toLowerCase();
-                    const notPronouncedElement = this.rootElement.querySelector(".not-pronounced");
+                    const notPronouncedElement = this.exerciseElement.querySelector(".not-pronounced");
                     if(notPronouncedElement != null && notPronouncedElement.getAttribute("data-letter") == letter){
                         notPronouncedElement.classList.remove("not-pronounced");
                         notPronouncedElement.classList.add("pronounced");

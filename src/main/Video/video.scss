@@ -6,7 +6,6 @@ main { position: relative; }
 }
 
 #learning {
-    display: flex;
     position: absolute;
     z-index: 1;
     top: 0;
@@ -16,19 +15,30 @@ main { position: relative; }
     background: rgba(255, 143, 170, 0.8);
 
     color: white;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    font-size: 120px;
-    font-weight: bold;
-    text-shadow: 2px 2px #FF8FAA;
-
+    
     .assignment-label {
         background: #FF8FAA;
         display: inline-block;
         padding: 10px 40px;
         border-radius: 20px;
         border: 2px solid white;
+    }
+
+    .main-learning-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        font-size: 120px;
+        font-weight: bold;
+        text-shadow: 2px 2px #FF8FAA;
+        height: 100%;
+    }
+
+    .commands-container {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
     }
 }
 
