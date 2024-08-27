@@ -22,6 +22,9 @@ main { position: relative; }
         padding: 10px 40px;
         border-radius: 20px;
         border: 2px solid white;
+        opacity: 1;
+        scale: 1;
+        transition: opacity 0.2s ease-in-out, scale 0.3s ease-in-out;
     }
 
     .main-learning-container {
@@ -33,6 +36,11 @@ main { position: relative; }
         font-weight: bold;
         text-shadow: 2px 2px #FF8FAA;
         height: 100%;
+    }
+
+    .make-invisible {
+        opacity: 0;
+        scale: 0;
     }
 
     .commands-container {

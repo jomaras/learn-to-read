@@ -105,12 +105,17 @@ export class Teacher {
         }
     }
 
-    private onRecognizeWord(results: ISpeechRecognitionResult[]){
+    private async onRecognizeWord(results: ISpeechRecognitionResult[]){
         for(const item of results){
             const words = ValueUtils.splitIntoWords(item.text).map(it => it.toLowerCase());
             for(const word of words){
                 if(word == this.target){
                     SpeechRecognitionUtils.offSpeechRecognition(this.onRecognizeWord);
+                    
+                    this.exerciseElement.querySelector(".assignment-label").classList.add("make-invisible");
+                    (window as any).confetti({particleCount: 100, spread: 70, origin: { y: 0.6 }});
+                    await this.sleep(1200);
+                    
                     this.triggerContinueCallbacks();
                     return;
                 }
