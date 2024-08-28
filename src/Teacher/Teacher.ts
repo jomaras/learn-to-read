@@ -2,6 +2,7 @@ import { ISpeechRecognitionResult, SpeechRecognitionUtils } from "../SpeechRecog
 import { ExerciseType } from "./model/ExerciseType";
 import { ValueUtils } from './../utils/ValueUtils';
 import { VoiceOver } from './../voiceOver/VoiceOver';
+import  { SpacedRepetition } from './../spacedRepetition/SpacedRepetition';
 
 export class Teacher {
     private rootElement: HTMLElement;
@@ -11,12 +12,19 @@ export class Teacher {
     private exerciseType: ExerciseType;
     private target: string = "";
     private sourceText: string = "";
+    private spacedRepetition: SpacedRepetition;
+
+    private lessonStartTime: number;
     
     constructor(rootElement: HTMLElement){
         this.rootElement = rootElement;
         this.exerciseElement = this.rootElement.querySelector(".main-learning-container");
         this.continueCallbacks = [];
-        this.exerciseType = ExerciseType.BigWords;
+        this.exerciseType = ExerciseType.Letter;
+
+        if(this.exerciseType == ExerciseType.Letter){
+            this.spacedRepetition = new SpacedRepetition("letters");
+        }
 
         this.onRecognizeWord = this.onRecognizeWord.bind(this);
         this.onRecognizeLetter = this.onRecognizeLetter.bind(this);
@@ -43,11 +51,20 @@ export class Teacher {
         else if(this.exerciseType == ExerciseType.Letter){
             this.teachLetters(text);
         }
+
+        this.lessonStartTime = Date.now();
     }
 
     private async teachLetters(text: string){
-        const letters = Array.from(text);
-        const letter = letters.find(it => ValueUtils.isLetter(it));
+        const letters = Array.from(text).filter(it => ValueUtils.isLetter(it));
+        
+        const spacedRepetitionItem = this.spacedRepetition.getBestItemOf(letters);
+        if(spacedRepetitionItem == null){
+            this.triggerContinueCallbacks();
+            return;
+        }
+        
+        const letter = spacedRepetitionItem.id;
         const isUpperCase = letter.toUpperCase() == letter;
         
         const upperCase = letter.toUpperCase();
@@ -55,7 +72,7 @@ export class Teacher {
         
         this.exerciseElement.innerHTML = `<div class='assignment-label'><span class="uppercase ${isUpperCase ? "" : "transparent-letter"}">${upperCase}</span> <span class="lowercase ${isUpperCase ? "transparent-letter" : ""}">${lowercase}</span></div>`;
 
-        this.target = letter.toLowerCase();
+        this.target = letter;
 
         await this.sleep(250);
         await VoiceOver.playReadLetter();
@@ -91,9 +108,36 @@ export class Teacher {
         for(const item of results){
             const words = ValueUtils.splitIntoWords(item.text).map(it => it.toLowerCase());
             for(const word of words){
-                if(word.toLowerCase() == this.target
-                || word[0].toLowerCase() == this.target){
+                if(word.toLowerCase() == this.target.toLowerCase()
+                || word[0].toLowerCase() == this.target.toLowerCase()){
                     SpeechRecognitionUtils.offSpeechRecognition(this.onRecognizeLetter);
+
+                    const spacedRepetitionItem = this.spacedRepetition.retrieveItem(this.target);
+                    if(spacedRepetitionItem != null) {
+                        const now = Date.now();
+                        const elapsedTime = now - this.lessonStartTime;
+
+                        if(elapsedTime < 2000) {
+                            spacedRepetitionItem.quality = 5;
+                        }
+                        else if(elapsedTime < 4000) {
+                            spacedRepetitionItem.quality = 4;
+                        }
+                        else if(elapsedTime < 6000) {
+                            spacedRepetitionItem.quality = 3;
+                        }
+                        else if(elapsedTime < 8000) {
+                            spacedRepetitionItem.quality = 2;
+                        }
+                        else if(elapsedTime < 10000) {
+                            spacedRepetitionItem.quality = 1;
+                        }
+                        else {
+                            spacedRepetitionItem.quality = 0;
+                        }
+
+                        this.spacedRepetition.addItem(spacedRepetitionItem);
+                    }
 
                     await this.sleep(250);
                     await VoiceOver.playLetterSound(this.target);
