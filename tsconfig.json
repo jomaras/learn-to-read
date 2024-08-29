@@ -9,5 +9,5 @@
         "outDir": "bin/js",
         "strictNullChecks": false
     },
-    "files": ["src/main/Video/video.ts"]
+    "files": ["src/main/videos/video.ts"]
 }
