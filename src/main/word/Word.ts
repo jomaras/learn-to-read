@@ -127,8 +127,8 @@ function hideFireworks(){
         
         if(wordsBank){
             currentWordCounter = 0;
-            //teachWord(wordsBank[currentWordCounter].word);
-            teachWord("konj");
+            teachWord(wordsBank[currentWordCounter].word);
+            //teachWord("konj");
         }
     }
 
