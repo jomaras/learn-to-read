@@ -3,13 +3,14 @@ import { ExerciseType } from "./model/ExerciseType";
 import { ValueUtils } from '../utils/ValueUtils';
 import { VoiceOver } from '../voiceOver/VoiceOver';
 import  { SpacedRepetition } from '../spacedRepetition/SpacedRepetition';
+import { ITeachingResult, ITeachingResultCallback } from './model/ITeachingResult';
 
 import './teacher.scss';
 
 export class Teacher {
     private rootElement: HTMLElement;
     private exerciseElement: HTMLElement;
-    private continueCallbacks: Function[];
+    private continueCallbacks: ITeachingResultCallback[];
     
     private exerciseType: ExerciseType;
     private target: string = "";
@@ -37,7 +38,7 @@ export class Teacher {
         
         this.rootElement.querySelector(".skip-button")?.addEventListener("click", () => {
             SpeechRecognitionUtils.offSpeechRecognition(this.onRecognizeWord);
-            this.triggerContinueCallbacks(false);
+            this.triggerContinueCallbacks(false, 0);
             return;
         });
     }
@@ -62,7 +63,7 @@ export class Teacher {
         
         const spacedRepetitionItem = this.spacedRepetition.getBestItemOf(letters);
         if(spacedRepetitionItem == null){
-            this.triggerContinueCallbacks(false);
+            this.triggerContinueCallbacks(false, 0);
             return;
         }
         
@@ -102,7 +103,7 @@ export class Teacher {
         return Array.from(text).map(it => `<span class="not-pronounced" data-letter="${it.toLowerCase()}">${it}</span>`).join("")
     }
 
-    public onContinue(callback: Function){
+    public onContinue(callback: ITeachingResultCallback){
         this.continueCallbacks.push(callback);
     }
 
@@ -141,10 +142,12 @@ export class Teacher {
                         this.spacedRepetition.addItem(spacedRepetitionItem);
                     }
 
+                    const duration = Date.now() - this.lessonStartTime;
+                    
                     await ValueUtils.sleep(250);
                     await VoiceOver.playLetterSound(this.target);
 
-                    this.triggerContinueCallbacks(true);
+                    this.triggerContinueCallbacks(true, duration);
                     return;
                 }
             }
@@ -152,7 +155,6 @@ export class Teacher {
     }
 
     private async onRecognizeWord(results: ISpeechRecognitionResult[]){
-        
         for(const item of results){
             const words = ValueUtils.splitIntoWords(item.text).map(it => it.toLowerCase());
             for(const word of words){
@@ -160,9 +162,12 @@ export class Teacher {
                     SpeechRecognitionUtils.offSpeechRecognition(this.onRecognizeWord);
                     
                     this.exerciseElement.querySelector(".assignment-label").classList.add("make-invisible");
+                    
+                    const duration = Date.now() - this.lessonStartTime;
+                    
                     await this.showConfetti();
                     
-                    this.triggerContinueCallbacks(true);
+                    this.triggerContinueCallbacks(true, duration);
                     return;
                 }
                 else if(word.length == 1){
@@ -198,19 +203,25 @@ export class Teacher {
             if(joined == this.target
             || joined.indexOf(this.target) >= 0){
                 SpeechRecognitionUtils.offSpeechRecognition(this.onRecognizeWord);
+
+                const duration = Date.now() - this.lessonStartTime;
                     
                 this.exerciseElement.querySelector(".assignment-label").classList.add("make-invisible");
                 await this.showConfetti();
                 
-                this.triggerContinueCallbacks(true);
+                this.triggerContinueCallbacks(true, duration);
                 return;
             }
         }
     }
 
-    private triggerContinueCallbacks(value: boolean){
+    private triggerContinueCallbacks(success: boolean, duration: number){
         for(const callback of this.continueCallbacks){
-            callback(value);
+            callback({
+                success: success,
+                duration: duration,
+                target: this.target
+            });
         }
     };
 

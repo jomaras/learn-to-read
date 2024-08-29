@@ -2,6 +2,7 @@ import './word.scss';
 import { Teacher } from './../../teacher/Teacher'
 import { ExerciseType } from '../../teacher/model/ExerciseType';
 import { ValueUtils } from '../../utils/ValueUtils';
+import { ITeachingResult } from '../../teacher/model/ITeachingResult';
 
 
 let points = 0;
@@ -60,9 +61,6 @@ function hideFireworks(){
             
 (async () => {
     const data = await (await fetch("wordsAndSylablles.json")).json();
-
-    let roundStartTime = new Date();
-    let roundEndTime = new Date();
     let word: string = "";
 
     function teachWord(currentWord: string){
@@ -71,12 +69,11 @@ function hideFireworks(){
     }
     
     const teacher = new Teacher(mainContainer, ExerciseType.BigWords);
-    teacher.onContinue(async (hasBeenRecognized: boolean) => {
-        console.log("on continue");
-        roundEndTime = new Date();
+    teacher.onContinue(async (teachingResult:ITeachingResult) => {
+        console.log("on continue", teachingResult);
         
-        if(hasBeenRecognized){
-            const duration = (+roundEndTime - +roundStartTime)/1000;
+        if(teachingResult.success){
+            const duration = teachingResult.duration/1000;
             let newPoints = 0;
             
             if(duration < 1){ newPoints = 50; }
