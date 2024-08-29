@@ -1,4 +1,4 @@
-import { ISpeechRecognitionResult, SpeechRecognitionUtils } from "../speechRecognitions/SpeechRecognitionUtils";
+import { ISpeechRecognitionResult, SpeechRecognitionUtils } from "../speechRecognition/SpeechRecognitionUtils";
 import { ExerciseType } from "./model/ExerciseType";
 import { ValueUtils } from '../utils/ValueUtils';
 import { VoiceOver } from '../voiceOver/VoiceOver';
