@@ -12,6 +12,16 @@ class ValueUtilsClass {
         
         return array[Math.floor(Math.random()*array.length)];
     }
+
+    public getRandomNumber(lowend: number, highend: number){
+        return Math.floor(Math.random() * highend) + lowend;
+    }
+
+    public sleep(time: number){
+        return new Promise((resolve, reject) => {
+            setTimeout(resolve, time);
+        });
+    }
 }
 
 export const ValueUtils = new ValueUtilsClass();

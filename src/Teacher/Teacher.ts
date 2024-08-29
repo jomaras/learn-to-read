@@ -4,6 +4,8 @@ import { ValueUtils } from '../utils/ValueUtils';
 import { VoiceOver } from '../voiceOver/VoiceOver';
 import  { SpacedRepetition } from '../spacedRepetition/SpacedRepetition';
 
+import './teacher.scss';
+
 export class Teacher {
     private rootElement: HTMLElement;
     private exerciseElement: HTMLElement;
@@ -29,13 +31,13 @@ export class Teacher {
         this.onRecognizeWord = this.onRecognizeWord.bind(this);
         this.onRecognizeLetter = this.onRecognizeLetter.bind(this);
 
-        this.rootElement.querySelector(".retry-button").addEventListener("click", () => {
+        this.rootElement.querySelector(".retry-button")?.addEventListener("click", () => {
             this.teach(this.sourceText);
         });
         
-        this.rootElement.querySelector(".skip-button").addEventListener("click", () => {
+        this.rootElement.querySelector(".skip-button")?.addEventListener("click", () => {
             SpeechRecognitionUtils.offSpeechRecognition(this.onRecognizeWord);
-            this.triggerContinueCallbacks();
+            this.triggerContinueCallbacks(false);
             return;
         });
     }
@@ -60,7 +62,7 @@ export class Teacher {
         
         const spacedRepetitionItem = this.spacedRepetition.getBestItemOf(letters);
         if(spacedRepetitionItem == null){
-            this.triggerContinueCallbacks();
+            this.triggerContinueCallbacks(false);
             return;
         }
         
@@ -74,7 +76,7 @@ export class Teacher {
 
         this.target = letter;
 
-        await this.sleep(250);
+        await ValueUtils.sleep(250);
         await VoiceOver.playReadLetter();
 
         SpeechRecognitionUtils.onSpeechRecognition(this.onRecognizeLetter);
@@ -139,10 +141,10 @@ export class Teacher {
                         this.spacedRepetition.addItem(spacedRepetitionItem);
                     }
 
-                    await this.sleep(250);
+                    await ValueUtils.sleep(250);
                     await VoiceOver.playLetterSound(this.target);
 
-                    this.triggerContinueCallbacks();
+                    this.triggerContinueCallbacks(true);
                     return;
                 }
             }
@@ -150,6 +152,7 @@ export class Teacher {
     }
 
     private async onRecognizeWord(results: ISpeechRecognitionResult[]){
+        
         for(const item of results){
             const words = ValueUtils.splitIntoWords(item.text).map(it => it.toLowerCase());
             for(const word of words){
@@ -157,10 +160,9 @@ export class Teacher {
                     SpeechRecognitionUtils.offSpeechRecognition(this.onRecognizeWord);
                     
                     this.exerciseElement.querySelector(".assignment-label").classList.add("make-invisible");
-                    (window as any).confetti({particleCount: 100, spread: 70, origin: { y: 0.6 }});
-                    await this.sleep(1200);
+                    await this.showConfetti();
                     
-                    this.triggerContinueCallbacks();
+                    this.triggerContinueCallbacks(true);
                     return;
                 }
                 else if(word.length == 1){
@@ -171,19 +173,50 @@ export class Teacher {
                         notPronouncedElement.classList.add("pronounced");
                     }
                 }
+                else if(word.length == 2 && (word == "lj" || word == "nj")){
+                    let notPronouncedElement = this.exerciseElement.querySelector(".not-pronounced");
+                    let pronouncedElements = this.exerciseElement.querySelectorAll(".pronounced");
+                    
+
+                    if(notPronouncedElement != null 
+                    && (notPronouncedElement.getAttribute("data-letter") == word[0]
+                    || (pronouncedElements.length > 0 && pronouncedElements[pronouncedElements.length - 1]?.getAttribute("data-letter") == word[0]))){
+                        notPronouncedElement.classList.remove("not-pronounced");
+                        notPronouncedElement.classList.add("pronounced");
+                        
+                        notPronouncedElement = this.exerciseElement.querySelector(".not-pronounced");
+
+                        if(notPronouncedElement != null && notPronouncedElement.getAttribute("data-letter") == word[1]){
+                            notPronouncedElement.classList.remove("not-pronounced");
+                            notPronouncedElement.classList.add("pronounced");
+                        }
+                    }
+                }
+            }
+
+            const joined = words.join("");
+            if(joined == this.target
+            || joined.indexOf(this.target) >= 0){
+                SpeechRecognitionUtils.offSpeechRecognition(this.onRecognizeWord);
+                    
+                this.exerciseElement.querySelector(".assignment-label").classList.add("make-invisible");
+                await this.showConfetti();
+                
+                this.triggerContinueCallbacks(true);
+                return;
             }
         }
     }
 
-    private triggerContinueCallbacks(){
+    private triggerContinueCallbacks(value: boolean){
         for(const callback of this.continueCallbacks){
-            callback();
+            callback(value);
         }
     };
 
-    private sleep(timeout: number){
-        return new Promise((resolve, reject) => {
-            setTimeout(resolve, timeout);
-        });
-    }
+    private async showConfetti(){
+        (window as any).confetti({particleCount: 100, spread: 70, origin: { y: 0.6 }});
+        await ValueUtils.sleep(1500);
+        (window as any).confetti.reset();
+    }   
 }
