@@ -1,8 +1,8 @@
-import { ISpeechRecognitionResult, SpeechRecognitionUtils } from "../SpeechRecognition/SpeechRecognitionUtils";
+import { ISpeechRecognitionResult, SpeechRecognitionUtils } from "../speechRecognition/SpeechRecognitionUtils";
 import { ExerciseType } from "./model/ExerciseType";
-import { ValueUtils } from './../utils/ValueUtils';
-import { VoiceOver } from './../voiceOver/VoiceOver';
-import  { SpacedRepetition } from './../spacedRepetition/SpacedRepetition';
+import { ValueUtils } from '../utils/ValueUtils';
+import { VoiceOver } from '../voiceOver/VoiceOver';
+import  { SpacedRepetition } from '../spacedRepetition/SpacedRepetition';
 
 export class Teacher {
     private rootElement: HTMLElement;
@@ -16,11 +16,11 @@ export class Teacher {
 
     private lessonStartTime: number;
     
-    constructor(rootElement: HTMLElement){
+    constructor(rootElement: HTMLElement, exerciseType: ExerciseType){
         this.rootElement = rootElement;
         this.exerciseElement = this.rootElement.querySelector(".main-learning-container");
         this.continueCallbacks = [];
-        this.exerciseType = ExerciseType.Letter;
+        this.exerciseType = exerciseType;
 
         if(this.exerciseType == ExerciseType.Letter){
             this.spacedRepetition = new SpacedRepetition("letters");

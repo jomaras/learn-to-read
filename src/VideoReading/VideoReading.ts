@@ -1,4 +1,5 @@
-import { Teacher } from "../Teacher/Teacher";
+import { ExerciseType } from "../teacher/model/ExerciseType";
+import { Teacher } from "../teacher/Teacher";
 
 export class VideoReading {
     private videoElement: HTMLVideoElement
@@ -20,7 +21,7 @@ export class VideoReading {
         
         this.onCuesLoaded(() => this.determineCuesForLearning());
 
-        this.teacher = new Teacher(learningContainer);
+        this.teacher = new Teacher(learningContainer, ExerciseType.Letter);
         this.teacher.onContinue(() => {
             this.learningContainer.classList.add("hidden");
             this.videoElement.play();
