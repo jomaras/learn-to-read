@@ -58,7 +58,6 @@ function hideFireworks(){
             
 (async () => {
     const data = await (await fetch("wordsWithSylablles.json")).json();
-    data.sort((a, b) => b.count - a.count);
     let word: string = "";
 
     function teachWord(currentWord: string){
@@ -108,20 +107,6 @@ function hideFireworks(){
     }
 
     function getRandomWord(){
-        const totalWeight = data.reduce((sum, item) => sum + item.count, 0);
-    
-        // Generate a random number between 0 and totalWeight
-        const randomNum = Math.random() * totalWeight;
-        
-        // Iterate through the array and find the item corresponding to the random number
-        let cumulativeWeight = 0;
-        for (const item of data) {
-            cumulativeWeight += item.count;
-            if (randomNum < cumulativeWeight) {
-                return item.hyphenated;
-            }
-        }
-
         return data[Math.floor(Math.random() * data.length)].hyphenated;
     }
 
