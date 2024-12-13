@@ -60,6 +60,9 @@ export class Teacher {
         else if(this.exerciseType == ExerciseType.Letter){
             this.teachLetters(text);
         }
+        else if(this.exerciseType == ExerciseType.Syllables){
+            this.teachSyllables(text);
+        }
 
         this.lessonStartTime = Date.now();
     }
@@ -91,6 +94,16 @@ export class Teacher {
 
     private timeoutId: any;
 
+    private teachSyllables(text: string){
+        clearTimeout(this.timeoutId);
+        const parts = text.split("-");
+        this.target = parts.join("").toLowerCase();
+        
+        this.exerciseElement.innerHTML = `<div class='assignment-label'>${this.generateSyllablesHtml(parts)}</div>`;
+
+        SpeechRecognitionUtils.onSpeechRecognition(this.onRecognizeWord);
+    }
+
     private techBigWords(text: string){
         clearTimeout(this.timeoutId);
         
@@ -116,6 +129,22 @@ export class Teacher {
                 }, this.currentConfig.hideAfterPeriod);
             }
         }
+    }
+
+    private generateSyllablesHtml(parts: string[]){
+        let html = "";
+
+        for(let i = 0; i < parts.length; i++){
+            const part = parts[i];
+            
+            html += `<span class='syllable'>${this.generateWordHtml(part)}</span>`;
+
+            if(i != parts.length -1){
+                html += "<span class='syllable-separator'>-</span>";
+            }
+        }
+
+        return html;
     }
 
     private generateWordHtml(text: string){

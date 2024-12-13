@@ -18,6 +18,22 @@
         opacity: 1;
         scale: 1;
         transition: opacity 0.2s ease-in-out, scale 0.3s ease-in-out;
+
+        &:has(.syllable){
+            display: inline-flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .syllable {
+            padding: 0 20px;
+            background: #d05975;
+            border-radius: 10px;
+        }
+
+        .syllable-separator {
+            padding: 0.2em;
+        }
     }
 
     .make-invisible {
