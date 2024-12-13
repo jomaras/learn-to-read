@@ -25,7 +25,33 @@ function hyphenate(word){
     return syllables.join('-');
 }
 
-(async () => {
+async function determineSentences(){
+    const files = fs.readdirSync(rootBookContentFolder);
+    const finalSentences = [];
+    
+    for(const file of files){
+        const content = fs.readFileSync(`${rootBookContentFolder}/${file}`, "utf-8");
+        const $ = cheerio.load(content);
+        const text = $("body").text();
+        
+        const cleanText = text.replaceAll("â", "a");
+        const sentences = cleanText.split(/\.|\!|\?|,|;|—/);
+
+        for(let sentence of sentences){
+            sentence = sentence.trim().replace(/\n/g, " ").trim();
+
+            if(!sentence || /\d|\(|\)|:|«|»|-/.test(sentence)){ continue; }
+            const words = sentence.split(/\s+/);
+            if(words.length < 3 || words.length > 6) { continue; }
+            
+            finalSentences.push(sentence);
+        }
+    }
+
+    fs.writeFileSync("sentences.txt", finalSentences.join("\n"), "utf-8");
+}
+
+async function determinewordsAndSylablles() {
     const files = fs.readdirSync(rootBookContentFolder);
     
     const syllablesCounter = new Map();
@@ -106,4 +132,7 @@ function hyphenate(word){
         words: nLetterWords,
         syllables: syllableEntries
     }), "utf-8");
-})();
+};
+
+//await determinewordsAndSylablles();
+determineSentences();

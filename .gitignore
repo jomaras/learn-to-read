@@ -132,4 +132,4 @@ dist
 node_modules/*
 videos/*
 sound/*
-bin/*
+bin/**

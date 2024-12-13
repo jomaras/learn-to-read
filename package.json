@@ -2,9 +2,11 @@
   "scripts": {
     "start": "serve -l 3002",
     "start-word": "concurrently \"npm run webpack-word\" \"serve -l 3002\"",
+    "start-quick-word": "concurrently \"npm run webpack-quick-word\" \"serve -l 3002\"",
     "start-video": "concurrently \"npm run webpack-video\" \"serve -l 3002\"",
     "webpack-video": "webpack --config ./webpack.video.config.js --mode development --watch --progress",
     "webpack-word": "webpack --config ./webpack.word.config.js --mode development --watch --progress",
+    "webpack-quick-word": "webpack --config ./webpack.quick-word.config.js --mode development --watch --progress",
     "build-video": "tsc && webpack --config ./webpack.video.config.js"
   },
   "dependencies": {

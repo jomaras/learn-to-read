@@ -7,6 +7,10 @@ import { ITeachingResult, ITeachingResultCallback } from './model/ITeachingResul
 
 import './teacher.scss';
 
+export interface ITeachConfig {
+    hideAfterPeriod?: number;
+}
+
 export class Teacher {
     private rootElement: HTMLElement;
     private exerciseElement: HTMLElement;
@@ -18,6 +22,7 @@ export class Teacher {
     private spacedRepetition: SpacedRepetition;
 
     private lessonStartTime: number;
+    private currentConfig: ITeachConfig;
     
     constructor(rootElement: HTMLElement, exerciseType: ExerciseType){
         this.rootElement = rootElement;
@@ -43,8 +48,9 @@ export class Teacher {
         });
     }
 
-    public teach(text: string) {
+    public teach(text: string, config: ITeachConfig = null) {
         this.sourceText = text;
+        this.currentConfig = config;
         
         if(this.exerciseType == ExerciseType.BigWords
         || this.exerciseType == ExerciseType.MediumWords
@@ -83,7 +89,11 @@ export class Teacher {
         SpeechRecognitionUtils.onSpeechRecognition(this.onRecognizeLetter);
     }
 
+    private timeoutId: any;
+
     private techBigWords(text: string){
+        clearTimeout(this.timeoutId);
+        
         const words = ValueUtils.splitIntoWords(text).sort((a, b) => b.length - a.length);
         const bigWords = words.filter(it => it.length >= 4);
 
@@ -93,10 +103,19 @@ export class Teacher {
             selectedWord = ValueUtils.getRandomArrayItem(bigWords);
         }
 
-        this.exerciseElement.innerHTML = `<div class='assignment-label'>${this.generateWordHtml(selectedWord)}</div>`;
+        this.exerciseElement.innerHTML = `<div class='assignment-label' data-mask='${Array.from(selectedWord).map(it => "*").join("")}'>${this.generateWordHtml(selectedWord)}</div>`;
         this.target = selectedWord.toLowerCase();
 
         SpeechRecognitionUtils.onSpeechRecognition(this.onRecognizeWord);
+
+        if(this.currentConfig){
+            if(this.currentConfig.hideAfterPeriod > 0){
+                this.timeoutId = setTimeout(() => {
+                    const assignmentLabel = this.exerciseElement.querySelector(".assignment-label");
+                    assignmentLabel.textContent = assignmentLabel.getAttribute("data-mask");
+                }, this.currentConfig.hideAfterPeriod);
+            }
+        }
     }
 
     private generateWordHtml(text: string){

@@ -1,5 +1,5 @@
-import './word.scss';
-import { Teacher } from './../../teacher/Teacher'
+import './quick-word.scss';
+import { Teacher } from '../../teacher/Teacher'
 import { ExerciseType } from '../../teacher/model/ExerciseType';
 import { ValueUtils } from '../../utils/ValueUtils';
 import { ITeachingResult } from '../../teacher/model/ITeachingResult';
@@ -65,7 +65,7 @@ function hideFireworks(){
 
     function teachWord(currentWord: string){
         word = currentWord;
-        teacher.teach(word);
+        teacher.teach(word, { hideAfterPeriod: word.length * 350});
     }
     
     const teacher = new Teacher(mainContainer, ExerciseType.BigWords);
@@ -98,22 +98,10 @@ function hideFireworks(){
     
 
     function getCurrentWordsBank(){
-        let lettersCount: any = (document.querySelector("#numberOfLettersSelector") as HTMLInputElement).value;
-        if(lettersCount == "random"){
-            lettersCount = ValueUtils.getRandomNumber(3, 8);
-        }
+        let randomNumber = Math.max(2, Math.min(4, ValueUtils.getRandomNumber(2, 4)));
         
-        return data.words[lettersCount] || getCurrentWordsBank();
+        return data.words[randomNumber] || getCurrentWordsBank();
     }
-
-    document.querySelector("#numberOfLettersSelector")?.addEventListener("change", () => {
-        const wordsBank = getCurrentWordsBank();
-        
-        if(wordsBank){
-            currentWordCounter = 0;
-            teachWord(wordsBank[currentWordCounter].word)
-        }
-    });
 
     document.querySelector("#startButton")?.addEventListener("click", startNewGame);
 
@@ -126,7 +114,6 @@ function hideFireworks(){
         if(wordsBank){
             currentWordCounter = 0;
             teachWord(wordsBank[currentWordCounter].word);
-            //teachWord("konj");
         }
     }
 

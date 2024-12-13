@@ -23,7 +23,7 @@ class SpeechRecognitionUtilsClass {
 
         this.shouldSpeechRecognitionBeRunning = false;
 
-        this.speechRecognition.onresult = (event) => {
+        this.speechRecognition.addEventListener("result", (event) => {
             const lastResult = event.results[event.results.length - 1];
             const nonEmptyResults: {text: string, confidence: number}[] = [];
             
@@ -43,23 +43,39 @@ class SpeechRecognitionUtilsClass {
             if(nonEmptyResults.length > 0){
                 this.triggerCallbacks(nonEmptyResults);
             }
-        };
-            
-        this.speechRecognition.onend = e => {
+        });
+
+        this.speechRecognition.addEventListener("end", e => {
             console.log("Ended, restarting...");
             if(this.shouldSpeechRecognitionBeRunning){
                 this.speechRecognition.start();
             }
-        };
+        });
 
-        this.speechRecognition.onerror = (event) => {
+        this.speechRecognition.addEventListener("error", (event) => {
             console.log(`Error occurred: ${event.error}`);    
             // Optionally, you can restart on certain errors
             if (event.error === 'no-speech' || event.error === 'aborted') {
                 console.log("Restarting due to error...");
                 this.speechRecognition.start();
             }
-        };
+        });
+
+        this.speechRecognition.addEventListener("soundstart", (e) => {
+            console.log("sound start");
+        });
+
+        this.speechRecognition.addEventListener("soundend", (e) => {
+            console.log("sound end");
+        });
+
+        this.speechRecognition.addEventListener("speechstart", (e) => {
+            console.log("speech start");
+        });
+
+        this.speechRecognition.addEventListener("speechend", (e) => {
+            console.log("speech end");
+        });
     }
 
     public onSpeechRecognition(callback: (results: ISpeechRecognitionResult[]) => void){
@@ -70,6 +86,7 @@ class SpeechRecognitionUtilsClass {
         this.speechRecognitionCallbacks.push(callback);
 
         if(this.speechRecognitionCallbacks.length == 1){
+            console.log("Starting speech recognition");
             this.speechRecognition.start();
             this.shouldSpeechRecognitionBeRunning = true;
         }

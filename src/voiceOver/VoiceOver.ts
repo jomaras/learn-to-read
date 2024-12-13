@@ -2,12 +2,18 @@ class VoiceOverClass {
     public language: string = "hr";
     private audioElement: HTMLAudioElement = document.getElementById("audio") as HTMLAudioElement;
 
-    public async playLetterSound(letter){
+    public async playWordLetterByLetter(word: string){
+        for(const letter of word){
+            await this.playLetterSound(letter, 2.5);
+        }
+    }
+
+    public async playLetterSound(letter, playbackRate: number = 1){
         return new Promise(async (resolve, reject) => {
-            console.log("play letter sound");
             if(this.language == "hr"){
                 try {
                     await this.loadAudio(`sound/letters/${this.language}/${letter}.mp3`);
+                    this.audioElement.playbackRate = playbackRate;
                     await this.playTillEnd();
                 }
                 catch(e){
